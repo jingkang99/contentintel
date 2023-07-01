@@ -104,7 +104,7 @@ func main() {
 		
 		header, footer = "", ""
 
-		//body, meta, err = fileconvt.ConvertRTF(filename)
+		body, meta, _ = fileconvt.ConvertPDF(filename)
 	}
 
 	fileconvt.PrintFileText(header, footer, body, meta)

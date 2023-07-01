@@ -1,10 +1,7 @@
 package fileconvt
 
 import (
-	"os"
 	"os/exec"
-	"io"
-	"io/ioutil"
 	"fmt"
 	"time"
 	"strings"
@@ -14,7 +11,6 @@ var pdfTimeLayouts = timeLayouts{time.ANSIC, "Mon Jan _2 15:04:05 2006 MST"}
 
 type timeLayouts []string
 
-// Meta data
 type MetaResult struct {
 	meta map[string]string
 	err  error
@@ -25,9 +21,42 @@ type BodyResult struct {
 	err  error
 }
 
-// Convert PDF
+func ConvertPDF(path string) (string, map[string]string, error) {
 
-func ConvertPDFText(path string) (BodyResult, MetaResult, error) {
+	meta := make(map[string]string)
+	
+	metaStr, err := exec.Command("pdfinfo", path).Output()
+	if err != nil {
+		return "", nil, err
+	}
+
+	for _, line := range strings.Split(string(metaStr), "\n") {
+		if parts := strings.SplitN(line, ":", 2); len(parts) > 1 {
+			meta[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+		}
+	}
+
+	// Convert parsed meta
+	if x, ok := meta["ModDate"]; ok {
+		if t, ok := pdfTimeLayouts.Parse(x); ok {
+			meta["ModifiedDate"] = fmt.Sprintf("%d", t.Unix())
+		}
+	}
+	if x, ok := meta["CreationDate"]; ok {
+		if t, ok := pdfTimeLayouts.Parse(x); ok {
+			meta["CreatedDate"] = fmt.Sprintf("%d", t.Unix())
+		}
+	}
+
+	body, err1 := exec.Command("pdftotext", "-q", "-nopgbrk", "-enc", "UTF-8", "-eol", "unix", path, "-").Output()
+	if err1 != nil {
+		return "", nil, err1
+	}
+
+	return string(body), meta, nil
+}
+
+func ConvertPDF_O(path string) (BodyResult, MetaResult, error) {
 	metaResult := MetaResult{meta: make(map[string]string)}
 	bodyResult := BodyResult{}
 	mr := make(chan MetaResult, 1)
@@ -85,27 +114,3 @@ func (tl timeLayouts) Parse(x string) (time.Time, bool) {
 	}
 	return time.Time{}, false
 }
-
-func ConvertPDF(r io.Reader) (string, map[string]string, error) {
-	
-	f, err := ioutil.TempFile(os.TempDir(), "pdfz")
-	if err != nil {
-		return "", nil, fmt.Errorf("error creating local file: %v", err)
-	}
-	defer os.Remove(f.Name())
-
-	bodyResult, metaResult, convertErr := ConvertPDFText(f.Name())
-	if convertErr != nil {
-		return "", nil, convertErr
-	}
-	if bodyResult.err != nil {
-		return "", nil, bodyResult.err
-	}
-	if metaResult.err != nil {
-		return "", nil, metaResult.err
-	}
-	return bodyResult.body, metaResult.meta, nil
-
-}
-
-// apt-get install poppler-utils
