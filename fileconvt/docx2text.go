@@ -149,7 +149,7 @@ func parseDocxText(f *zip.File) (string, error) {
 	}
 	defer r.Close()
 
-	text, err := DocxXMLToText(r)
+	text, err := XMLToText(r, []string{"br", "p", "tab"}, []string{"instrText", "script"}, true)
 	if err != nil {
 		return "", fmt.Errorf("error parsing '%v': %v", f.Name, err)
 	}
