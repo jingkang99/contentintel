@@ -153,7 +153,7 @@ func ConvertGB2312toUTF8(meta map[string]string) (map[string]string, error) {
 		v := strings.TrimSpace(value)
 		length := len([]rune(v))
 		if(length > 0){
-			text = text + fmt.Sprintf("%20s\t  %s\n", key, value)
+			text = text + fmt.Sprintf("%20s\t  %s\n$7$7$7", key, value)
 		}
 	}
 
@@ -172,7 +172,7 @@ func ConvertGB2312toUTF8(meta map[string]string) (map[string]string, error) {
 		fmt.Errorf("error delete temp: %v", err)
     }
 
-	utxt := strings.SplitAfter(string(txtUTF8), "\n")
+	utxt := strings.Split(string(txtUTF8), "\n$7$7$7")
 
 	mutf := make(map[string]string)
 	for i := 0; i < len(utxt); i++ {
