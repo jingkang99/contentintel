@@ -105,6 +105,49 @@ func main() {
 		header, footer = "", ""
 
 		body, meta, _ = fileconvt.ConvertPDF(filename)
+
+	}else if strings.HasSuffix(filename, "doc") || 
+			 strings.HasSuffix(filename, "dot") == true {
+		fmt.Println("-------- doc")
+		
+		header, footer = "", ""
+
+		body, meta, err = fileconvt.ConvertDoc(fh)
+
+	}else if strings.HasSuffix(filename, "xls") || 
+			 strings.HasSuffix(filename, "xlt") == true {
+		fmt.Println("-------- xls")
+		
+		header, footer = "", ""
+
+		// get all cell content
+		const SizeLimit = 20 * 1024 * 1024
+		stat, _ := fh.Stat()
+		buffer := bytes.NewBuffer(make([]byte, 0, SizeLimit))
+		fileconvt.ConvertXlsO(fh, buffer, stat.Size())
+		
+		body = buffer.String()
+		
+		meta, err = fileconvt.GetOffice2k3Meta(fh)
+
+	}else if strings.HasSuffix(filename, "ppt") || 
+			 strings.HasSuffix(filename, "pot") == true {
+		fmt.Println("-------- ppt")
+		
+		header, footer = "", ""
+
+		//body, meta, err = fileconvt.ConvertDoc(fh)
+
+		meta, err = fileconvt.GetOffice2k3Meta(fh)
+
+	}else if strings.HasSuffix(filename, "htm") || 
+			 strings.HasSuffix(filename, "html")||
+			 strings.HasSuffix(filename, "xhtml") == true {
+		fmt.Println("-------- html")
+
+		header, footer = "", ""
+
+		body, err = fileconvt.ConvertHtml(fh)
 	}
 
 	fileconvt.PrintFileText(header, footer, body, meta)
