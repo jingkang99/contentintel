@@ -1,18 +1,19 @@
 package fileconvt
 
 import (
+	"os"
+	"os/exec"
+	"io"
+	"io/ioutil"
+	"fmt"
 	"bytes"
 	"encoding/xml"
-	"fmt"
-	"io"
-	
-	"github.com/jingkang99/contentintel/comm"
 )
 
 // ConvertXML converts an XML file to text.
 func ConvertXML(r io.Reader) (string, map[string]string, error) {
 	meta := make(map[string]string)
-	cleanXML, err := comm.Tidy(r, true)
+	cleanXML, err := Tidy(r, true)
 	if err != nil {
 		return "", nil, fmt.Errorf("tidy error: %v", err)
 	}
@@ -27,7 +28,7 @@ func ConvertXML(r io.Reader) (string, map[string]string, error) {
 func XMLToText(r io.Reader, breaks []string, skip []string, strict bool) (string, error) {
 	var result string
 
-	dec := xml.NewDecoder(io.LimitReader(r, comm.Max_Bytes))
+	dec := xml.NewDecoder(io.LimitReader(r, SizeLimit))
 	dec.Strict = strict
 	for {
 		t, err := dec.Token()
@@ -78,7 +79,7 @@ func XMLToText(r io.Reader, breaks []string, skip []string, strict bool) (string
 // XMLToMap converts XML to a nested string map.
 func XMLToMap(r io.Reader) (map[string]string, error) {
 	m := make(map[string]string)
-	dec := xml.NewDecoder(io.LimitReader(r, comm.Max_Bytes))
+	dec := xml.NewDecoder(io.LimitReader(r, SizeLimit))
 	var tagName string
 	for {
 		t, err := dec.Token()
@@ -97,4 +98,26 @@ func XMLToMap(r io.Reader) (map[string]string, error) {
 		}
 	}
 	return m, nil
+}
+
+// Tidy attempts to tidy up XML.
+func Tidy(r io.Reader, xmlIn bool) ([]byte, error) {
+	f, err := ioutil.TempFile(os.TempDir(), "docconv")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(f.Name())
+	io.Copy(f, r)
+
+	var output []byte
+	if xmlIn {
+		output, err = exec.Command("tidy", "-xml", "-numeric", "-asxml", "-quiet", "-utf8", f.Name()).Output()
+	} else {
+		output, err = exec.Command("tidy", "-numeric", "-asxml", "-quiet", "-utf8", f.Name()).Output()
+	}
+
+	if err != nil && err.Error() != "exit status 1" {
+		return nil, err
+	}
+	return output, nil
 }

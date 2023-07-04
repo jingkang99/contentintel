@@ -6,10 +6,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/ssor/bom"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/charset"
+	"github.com/PuerkitoBio/goquery"
 
 	"github.com/jingkang99/contentintel/fileconvt/html2text"
 )

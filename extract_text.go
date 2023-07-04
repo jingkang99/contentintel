@@ -48,7 +48,8 @@ func main() {
 	if	strings.HasSuffix(filename, "docx") == true ||	//ppt
 		strings.HasSuffix(filename, "dotx") == true ||	//ppt template
 		strings.HasSuffix(filename, "docm") == true ||	//ppt with macro
-		strings.HasSuffix(filename, "dotm") == true {	//ppt template with macro
+		strings.HasSuffix(filename, "dotm") == true ||	//ppt template with macro
+		strings.HasSuffix(filename, "xps")  == true	{	
 
 		fmt.Println("-------- docx")
 		header, footer, body, meta, err = fileconvt.ConvertDocx(fh)
@@ -106,7 +107,7 @@ func main() {
 
 		body, meta, _ = fileconvt.ConvertPDF(filename)
 
-	}else if strings.HasSuffix(filename, "doc") || 
+	}else if strings.HasSuffix(filename, "doc") == true ||
 			 strings.HasSuffix(filename, "dot") == true {
 		fmt.Println("-------- doc")
 		
@@ -114,7 +115,7 @@ func main() {
 
 		body, meta, err = fileconvt.ConvertDoc(fh)
 
-	}else if strings.HasSuffix(filename, "xls") || 
+	}else if strings.HasSuffix(filename, "xls") == true ||
 			 strings.HasSuffix(filename, "xlt") == true {
 		fmt.Println("-------- xls")
 		
@@ -130,24 +131,42 @@ func main() {
 		
 		meta, err = fileconvt.GetOffice2k3Meta(fh)
 
-	}else if strings.HasSuffix(filename, "ppt") || 
+	}else if strings.HasSuffix(filename, "ppt") == true ||
 			 strings.HasSuffix(filename, "pot") == true {
 		fmt.Println("-------- ppt")
 		
 		header, footer = "", ""
 
-		//body, meta, err = fileconvt.ConvertDoc(fh)
+		body, meta, err = fileconvt.ConvertPpt(fh)
 
-		meta, err = fileconvt.GetOffice2k3Meta(fh)
-
-	}else if strings.HasSuffix(filename, "htm") || 
-			 strings.HasSuffix(filename, "html")||
+	}else if strings.HasSuffix(filename, "htm")   == true ||
+			 strings.HasSuffix(filename, "html")  == true ||
 			 strings.HasSuffix(filename, "xhtml") == true {
 		fmt.Println("-------- html")
 
 		header, footer = "", ""
 
 		body, err = fileconvt.ConvertHtml(fh)
+
+	}else if strings.HasSuffix(filename, "odt")   == true ||
+			 strings.HasSuffix(filename, "odp") == true {
+		fmt.Println("-------- odt/odp")
+		
+		header, footer = "", ""
+
+		body, meta, err = fileconvt.ConvertOdt(fh)
+
+	}else if strings.HasSuffix(filename, "ods") == true {
+		fmt.Println("-------- ods")
+		header, footer = "", ""
+
+		body, meta, err = fileconvt.ConvertOdt(fh)
+
+		const SizeLimit = 20 * 1024 * 1024
+		stat, _ := fh.Stat()
+		buffer := bytes.NewBuffer(make([]byte, 0, SizeLimit))
+		fileconvt.ConvertOds(fh, stat.Size(), buffer, SizeLimit)
+		body = buffer.String()
 	}
 
 	fileconvt.PrintFileText(header, footer, body, meta)

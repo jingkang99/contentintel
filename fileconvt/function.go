@@ -9,6 +9,9 @@ import (
 	"regexp"
 	"strings"
 )
+
+const SizeLimit = 20 * 1024 * 1024
+
 // https://www.fileformat.info/info/unicode/char/3000/index.htm
 // UTF-8 (hex)	0xE3 0x80 0x80 (e38080)
 func GenSection(sep string) string {

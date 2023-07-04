@@ -9,8 +9,6 @@ import (
 	"os"
 	"time"
 	"regexp"
-	
-	"github.com/jingkang99/contentintel/comm"
 )
 
 func GetXlsxText(r io.Reader) (string, string, string, map[string]string, error) {
@@ -30,7 +28,7 @@ func GetXlsxText(r io.Reader) (string, string, string, map[string]string, error)
 		size = si.Size()
 		ra = f
 	} else {
-		b, err := ioutil.ReadAll(io.LimitReader(r, comm.Max_Bytes))
+		b, err := ioutil.ReadAll(io.LimitReader(r, SizeLimit))
 		if err != nil {
 			return  "", "", "", nil, nil
 		}

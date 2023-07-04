@@ -15,14 +15,15 @@ type job struct {
 // ErrUnknown infers the file type cannot be determined by the provided magic bytes
 var ErrUnknown = fmt.Errorf("unknown file type")
 
-// Lookup looks up the file type based on the provided magic bytes. You should provide at least the first 1024 bytes of the file in this slice.
-// A magic.ErrUnknown will be returned if the file type is not known.
+// Provide at least the first 1024 bytes. A magic.ErrUnknown will be returned if unknown
 func Lookup(bytes []byte) (*FileType, error) {
 
 	// use all available cores
 	workerCount := runtime.GOMAXPROCS(0)
 	workChan := make(chan job)
 	resultChan := make(chan *FileType)
+	
+	//fmt.Printf("  working cores: %X\n", workerCount)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

@@ -9,8 +9,6 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
-	
-	"github.com/jingkang99/contentintel/comm"
 )
 
 type typeOverride struct {
@@ -42,7 +40,7 @@ func ConvertDocx(r io.Reader) (string, string, string, map[string]string, error)
 		size = si.Size()
 		ra = f
 	} else {
-		b, err := ioutil.ReadAll(io.LimitReader(r, comm.Max_Bytes))
+		b, err := ioutil.ReadAll(io.LimitReader(r, SizeLimit))
 		if err != nil {
 			return  "", "", "", nil, nil
 		}
